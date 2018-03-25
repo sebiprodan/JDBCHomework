@@ -40,6 +40,15 @@ public class AppTest {
 
     @Test
 
+    public void test_insert_statement_with_threads(){
+
+        AccomodationTable accomodationTable = new AccomodationTable();
+        accomodationTable.start();
+        RoomFairTable roomFairTable = new RoomFairTable();
+        roomFairTable.start();
+    }
+    @Test
+
     public void test_insert_statement() {
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Admin")) {
 
@@ -68,7 +77,9 @@ public class AppTest {
 
                 preparedStatement1.setString(5, "This room has a great view, no-smoking and with breakfast included");
 
-                preparedStatement1.executeUpdate();}
+                preparedStatement1.executeUpdate();
+                preparedStatement2.executeUpdate();
+                preparedStatement3.executeUpdate();}
         } catch (SQLException e) {
             e.printStackTrace();
         }
