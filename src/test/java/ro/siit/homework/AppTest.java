@@ -3,7 +3,9 @@ package ro.siit.homework;
 import org.junit.Test;
 import org.postgresql.util.PSQLException;
 
+import java.math.RoundingMode;
 import java.sql.*;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -14,39 +16,16 @@ public class AppTest {
     public void test_delete_a_row() {
 
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Admin")) {
-            Statement deleteRow = connection.createStatement();
-            ResultSet executeQuery1 = deleteRow.executeQuery("DELETE FROM accomodation");
-            ResultSet executeQuery2 = deleteRow.executeQuery("DELETE FROM room_fair");
-            ResultSet executeQuery3 = deleteRow.executeQuery("DELETE FROM accomodation_fair_relation");
-            } catch (SQLException s){
+            Statement deleteRow1 = connection.createStatement();
+            ResultSet executeQuery1 = deleteRow1.executeQuery("DELETE FROM accomodation_fair_relation");
+//            ResultSet executeQuery2 = deleteRow1.executeQuery("DELETE FROM accomodation");
+//            ResultSet executeQuery3 = deleteRow1.executeQuery("DELETE FROM room_fair");
+
+        } catch (SQLException s) {
             s.printStackTrace();
         }
-
-
     }
 
-    @Test
-
-    public void test_load_driver() {
-
-        try {
-            Class.forName("org.postgresql.Driver").newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            System.err.println("Can’t load driver. Verify CLASSPATH");
-            System.err.println(e.getMessage());
-        }
-
-    }
-
-    @Test
-
-    public void test_insert_statement_with_threads(){
-
-        AccomodationTable accomodationTable = new AccomodationTable();
-        accomodationTable.start();
-        RoomFairTable roomFairTable = new RoomFairTable();
-        roomFairTable.start();
-    }
     @Test
 
     public void test_insert_statement() {
@@ -59,19 +38,20 @@ public class AppTest {
             PreparedStatement preparedStatement3 = connection.prepareStatement("INSERT INTO accomodation_fair_relation "
                     + "(id, id_accomodation, id_room_fair) values (?,?,?)");
 
-            for (int i =1; i <= 10; i++){
+            for (int i = 1; i <= 10; i++) {
                 preparedStatement1.setInt(1, i);
-                preparedStatement2.setInt(1, i);
+                int randomIDRoomFair = ThreadLocalRandom.current().nextInt(10000);
+                preparedStatement2.setInt(1, randomIDRoomFair);
                 preparedStatement3.setInt(1, i);
 
                 preparedStatement1.setString(2, RoomType.getRandom().toString());
-                double random = ThreadLocalRandom.current().nextDouble(245, 700);
-                preparedStatement2.setDouble(2, random);
+                double randomRoomFair = ThreadLocalRandom.current().nextDouble(245, 700);
+                preparedStatement2.setDouble(2, Double.parseDouble(new DecimalFormat("#.##").format(randomRoomFair)));
                 preparedStatement3.setInt(2, i);
 
                 preparedStatement1.setString(3, BedType.getRandom().toString());
-                preparedStatement2.setString(3,Seasons.getRandom().toString());
-                preparedStatement3.setInt(3, i);
+                preparedStatement2.setString(3, Seasons.getRandom().toString());
+                preparedStatement3.setInt(3, randomIDRoomFair);
 
                 preparedStatement1.setInt(4, 2);
 
@@ -79,10 +59,28 @@ public class AppTest {
 
                 preparedStatement1.executeUpdate();
                 preparedStatement2.executeUpdate();
-                preparedStatement3.executeUpdate();}
+                preparedStatement3.executeUpdate();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+
+    public void test_join_tables() {
+
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Admin")) {
+            Statement joinTables = connection.createStatement();
+            ResultSet resultSet = joinTables.executeQuery("select a.id as RoomNo, r.value as Price from accomodation_fair_relation a join room_fair r on a.id_room_fair = r.id");
+            while (resultSet.next()) {
+                System.out.print(resultSet.getString("RoomNo")+ " | ");
+                System.out.println(resultSet.getString("Price") + " RON ");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Test
@@ -91,30 +89,30 @@ public class AppTest {
 
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Admin")) {
             Statement statement = connection.createStatement();
-            ResultSet users = statement.executeQuery("select * from accomodation");
-            while (users.next()) {
-                System.out.print(users.getInt(1) + "|");
-                System.out.print(users.getString(2) + "|");
-                System.out.print(users.getString(3) + "|");
-                System.out.print(users.getInt(4) + "|");
-                System.out.println(users.getString(5));
+            ResultSet resultSet = statement.executeQuery("select * from accomodation");
+            while (resultSet.next()) {
+                System.out.print(resultSet.getInt(1) + " | ");
+                System.out.print(resultSet.getString(2) + " | ");
+                System.out.print(resultSet.getString(3) + " | ");
+                System.out.print(resultSet.getInt(4) + " | ");
+                System.out.println(resultSet.getString(5));
 
             }
-
-//            users = statement.executeQuery("select u.name, u.email, a.city as oras from users u join addresses a on u.id = a.user_id");
-//            while (users.next()) {
-////                System.out.print(users.getString(1) + " ");
-////                System.out.print(users.getString(2) + " ");
-////                System.out.println(users.getString(3));
-//                System.out.print(users.getString("name") + " ");
-//                System.out.print(users.getString("email") + " ");
-//                System.out.println(users.getString("oras"));
-//
-//            }
-//
-//            statement.executeUpdate("update users set name = 'Gelu Naum' where email ='bgp1234@gmail.com'");
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+
+    }
+
+    @Test
+
+    public void test_load_driver() {
+
+        try {
+            Class.forName("org.postgresql.Driver").newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            System.err.println("Can’t load driver. Verify CLASSPATH");
+            System.err.println(e.getMessage());
         }
 
     }

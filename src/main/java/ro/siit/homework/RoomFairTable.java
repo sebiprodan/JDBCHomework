@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class RoomFairTable extends Thread {
@@ -15,8 +16,8 @@ public class RoomFairTable extends Thread {
 
             for (int i = 1; i <= 10; i++) {
                 preparedStatement2.setInt(1, i);
-                double random = ThreadLocalRandom.current().nextDouble(245, 700);
-                preparedStatement2.setDouble(2, random);
+                double randomRoomFair = ThreadLocalRandom.current().nextDouble(245, 700);
+                preparedStatement2.setDouble(2, Double.parseDouble(new DecimalFormat("#.##").format(randomRoomFair)));
                 preparedStatement2.setString(3, Seasons.getRandom().toString());
                 preparedStatement2.executeUpdate();
             }
