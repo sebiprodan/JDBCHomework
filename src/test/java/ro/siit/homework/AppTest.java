@@ -1,11 +1,29 @@
 package ro.siit.homework;
 
 import org.junit.Test;
+import org.postgresql.util.PSQLException;
 
 import java.sql.*;
 import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class AppTest {
+
+    @Test
+
+    public void test_delete_a_row() {
+
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Admin")) {
+            Statement deleteRow = connection.createStatement();
+            ResultSet executeQuery1 = deleteRow.executeQuery("DELETE FROM accomodation");
+            ResultSet executeQuery2 = deleteRow.executeQuery("DELETE FROM room_fair");
+            ResultSet executeQuery3 = deleteRow.executeQuery("DELETE FROM accomodation_fair_relation");
+            } catch (SQLException s){
+            s.printStackTrace();
+        }
+
+
+    }
 
     @Test
 
@@ -25,19 +43,35 @@ public class AppTest {
     public void test_insert_statement() {
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Admin")) {
 
-            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO accomodation " +
+            PreparedStatement preparedStatement1 = connection.prepareStatement("INSERT INTO accomodation " +
                     "(id, type, bed_type, max_guests,description) values (?,?,?,?,?)");
-            preparedStatement.setInt(1, 1);
-            preparedStatement.setString(2, "Standard Double-Room");
-            preparedStatement.setString(3, "Queen Size");
-            preparedStatement.setInt(4, 2);
-            preparedStatement.setString(5, "This room has a great view, no-smoking and with breakfast included");
-            preparedStatement.executeUpdate();
+            PreparedStatement preparedStatement2 = connection.prepareStatement("INSERT INTO room_fair "
+                    + "(id, value, season) values (?,?,?)");
+            PreparedStatement preparedStatement3 = connection.prepareStatement("INSERT INTO accomodation_fair_relation "
+                    + "(id, id_accomodation, id_room_fair) values (?,?,?)");
+
+            for (int i =1; i <= 10; i++){
+                preparedStatement1.setInt(1, i);
+                preparedStatement2.setInt(1, i);
+                preparedStatement3.setInt(1, i);
+
+                preparedStatement1.setString(2, RoomType.getRandom().toString());
+                double random = ThreadLocalRandom.current().nextDouble(245, 700);
+                preparedStatement2.setDouble(2, random);
+                preparedStatement3.setInt(2, i);
+
+                preparedStatement1.setString(3, BedType.getRandom().toString());
+                preparedStatement2.setString(3,Seasons.getRandom().toString());
+                preparedStatement3.setInt(3, i);
+
+                preparedStatement1.setInt(4, 2);
+
+                preparedStatement1.setString(5, "This room has a great view, no-smoking and with breakfast included");
+
+                preparedStatement1.executeUpdate();}
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-
     }
 
     @Test
