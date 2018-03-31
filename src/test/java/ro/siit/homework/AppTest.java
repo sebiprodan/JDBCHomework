@@ -17,9 +17,9 @@ public class AppTest {
 
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Admin")) {
             Statement deleteRow1 = connection.createStatement();
-            ResultSet executeQuery1 = deleteRow1.executeQuery("DELETE FROM accomodation_fair_relation");
-//            ResultSet executeQuery2 = deleteRow1.executeQuery("DELETE FROM accomodation");
-//            ResultSet executeQuery3 = deleteRow1.executeQuery("DELETE FROM room_fair");
+            deleteRow1.executeUpdate("DELETE FROM accomodation_fair_relation");
+            deleteRow1.executeUpdate("DELETE FROM accomodation");
+            deleteRow1.executeUpdate("DELETE FROM room_fair");
 
         } catch (SQLException s) {
             s.printStackTrace();
@@ -74,7 +74,7 @@ public class AppTest {
             Statement joinTables = connection.createStatement();
             ResultSet resultSet = joinTables.executeQuery("select a.id as RoomNo, r.value as Price from accomodation_fair_relation a join room_fair r on a.id_room_fair = r.id");
             while (resultSet.next()) {
-                System.out.print(resultSet.getString("RoomNo")+ " | ");
+                System.out.print(resultSet.getString("RoomNo") + " | ");
                 System.out.println(resultSet.getString("Price") + " RON ");
             }
         } catch (SQLException e) {
